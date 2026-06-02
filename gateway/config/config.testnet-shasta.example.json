@@ -1,0 +1,66 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 9012,
+    "publicBaseUrl": "http://127.0.0.1:9012/api/v1/donate",
+    "allowedOrigins": [
+      "http://127.0.0.1:4321",
+      "http://localhost:4321"
+    ]
+  },
+  "ledger": {
+    "path": "/opt/donate-gateway/data/testnet-shasta-orders.json"
+  },
+  "orders": {
+    "defaultExpiryMinutes": 30,
+    "minimumAmount": "1.00",
+    "maximumAmount": "5000.00",
+    "amountTolerance": "0.01",
+    "expiredOrderRetentionMinutes": 1440,
+    "defaultAsset": "USDT",
+    "defaultNetwork": "TRC20"
+  },
+  "assets": [
+    {
+      "asset": "USDT",
+      "network": "TRC20",
+      "enabled": true,
+      "receiveAddress": "",
+      "addressPool": [],
+      "tokenContract": "",
+      "tokenSymbol": "USDT",
+      "confirmations": 1
+    }
+  ],
+  "risk": {
+    "sourceNoticeRequired": true,
+    "autoAcceptSimulatedCleanPayments": false,
+    "freezeUnknownTransfers": true
+  },
+  "screening": {
+    "provider": "local-ofac-exact",
+    "localSanctionsPath": "/opt/donate-gateway/config/sanctions-addresses.txt"
+  },
+  "tron": {
+    "enabled": true,
+    "apiBaseUrl": "https://api.shasta.trongrid.io",
+    "apiKey": "",
+    "pollIntervalSeconds": 90,
+    "transferLimit": 50
+  },
+  "wallet": {
+    "localAddressGeneration": true,
+    "path": "/opt/donate-gateway/data/testnet-shasta-wallets.json",
+    "encryptionKeyFile": "/opt/donate-gateway/config/testnet-wallet-secret.key"
+  },
+  "account": {
+    "clientId": "REPLACE_WITH_ACCOUNT_SYSTEM_CLIENT_ID",
+    "loginUrl": "https://account.js.gripe/login",
+    "meUrl": "https://gateway.js.gripe/api/v1/myaccount/me",
+    "redirectUri": "http://127.0.0.1:9012/auth/account/callback",
+    "scopes": ["accounts:read"]
+  },
+  "test": {
+    "allowSimulate": true
+  }
+}

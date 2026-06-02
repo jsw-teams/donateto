@@ -456,8 +456,11 @@ async function fetchTronTrc20Transfers(address, assetConfig) {
   return (payload.data || [])
     .map(normalizeTrc20Transfer)
     .filter((transfer) => {
-      const tokenMatches = !assetConfig.tokenContract
-        || transfer.tokenAddress.toLowerCase() === String(assetConfig.tokenContract).toLowerCase();
+      const expectedContract = String(assetConfig.tokenContract || "").trim().toLowerCase();
+      const expectedSymbol = String(assetConfig.tokenSymbol || "").trim().toUpperCase();
+      const tokenMatches = expectedContract
+        ? transfer.tokenAddress.toLowerCase() === expectedContract
+        : !expectedSymbol || transfer.tokenSymbol.toUpperCase() === expectedSymbol;
       return tokenMatches && transfer.to === address;
     });
 }

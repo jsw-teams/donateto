@@ -30,6 +30,46 @@
 - 测试网无法证明 Binance 充值路径可用。
 - 测试网合约地址和主网合约地址可能不同，配置必须明确区分。
 
+本站当前已经准备好测试网配置：
+
+- Nile 运行配置：`/opt/donate-gateway/config/config.testnet-nile.json`
+- Shasta 运行配置：`/opt/donate-gateway/config/config.testnet-shasta.json`
+- 公开样例：`gateway/config/config.testnet-nile.example.json` 和 `gateway/config/config.testnet-shasta.example.json`
+- 测试网账本与钱包文件使用 `testnet-*` 独立路径，不会污染主网 `orders.json` / `wallets.json`。
+- 测试网端口：Nile 使用 `127.0.0.1:9011`，Shasta 使用 `127.0.0.1:9012`。
+
+启动 Nile 测试网实例：
+
+```bash
+DONATE_GATEWAY_CONFIG=/opt/donate-gateway/config/config.testnet-nile.json node /opt/donate-gateway/src/server.mjs
+```
+
+在另一个终端创建测试订单：
+
+```bash
+node /opt/donate-gateway/test/testnet-order-smoke.mjs
+```
+
+脚本会输出：
+
+- `orderId`
+- 测试网 `payTo` 收款地址
+- 订单金额，默认 `5.00`
+
+然后在 TronLink 切换到 Nile 或 Shasta 测试网，把 faucet 获取的测试 USDT 发送到 `payTo`。
+
+测试网 faucet：
+
+- Nile: `https://nileex.io/join/getJoinPage`
+- Shasta: `https://shasta.tronex.io/join/getJoinPage`
+- 官方社区 Bot 也支持 `!nile_usdt ADDR` / `!shasta_usdt ADDR` 领取测试 USDT。
+
+配置注意：
+
+- 主网配置继续使用 USDT/TRC20 合约地址 `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t` 精确匹配。
+- 测试网样例不写主网合约地址，而使用 `tokenSymbol: "USDT"` 匹配 faucet 发出的测试网 TRC20 USDT。
+- 不要把测试网配置部署到公网 `pay.js.gripe` 或 `gateway.js.gripe`，也不要把测试网订单标记为真实支持。
+
 ### 2. Binance 资金来源：一次 10U 真实收款验收
 
 用途：
