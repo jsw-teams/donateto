@@ -1,0 +1,71 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 9010,
+    "publicBaseUrl": "https://gateway.js.gripe/api/v1/donate",
+    "allowedOrigins": [
+      "https://js.gripe",
+      "https://pay.js.gripe",
+      "https://blog.js.gripe",
+      "http://127.0.0.1:4321",
+      "http://localhost:4321"
+    ]
+  },
+  "ledger": {
+    "path": "/opt/donate-gateway/data/orders.json"
+  },
+  "orders": {
+    "defaultExpiryMinutes": 30,
+    "minimumAmount": "1.00",
+    "maximumAmount": "20.00",
+    "amountTolerance": "0.01",
+    "expiredOrderRetentionMinutes": 1440,
+    "defaultAsset": "USDT",
+    "defaultNetwork": "TRC20"
+  },
+  "assets": [
+    {
+      "asset": "USDT",
+      "network": "TRC20",
+      "enabled": true,
+      "receiveAddress": "REPLACE_WITH_RECEIVE_ADDRESS",
+      "addressPool": [
+        "REPLACE_WITH_TRON_RECEIVE_ADDRESS_0001",
+        "REPLACE_WITH_TRON_RECEIVE_ADDRESS_0002"
+      ],
+      "tokenContract": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+      "confirmations": 1
+    }
+  ],
+  "risk": {
+    "sourceNoticeRequired": true,
+    "autoAcceptSimulatedCleanPayments": false,
+    "freezeUnknownTransfers": true
+  },
+  "screening": {
+    "provider": "local-ofac-exact",
+    "localSanctionsPath": "/opt/donate-gateway/config/sanctions-addresses.txt"
+  },
+  "tron": {
+    "enabled": true,
+    "apiBaseUrl": "https://api.trongrid.io",
+    "apiKey": "",
+    "pollIntervalSeconds": 90,
+    "transferLimit": 50
+  },
+  "wallet": {
+    "localAddressGeneration": false,
+    "path": "/opt/donate-gateway/data/wallets.json",
+    "encryptionKeyFile": "/opt/donate-gateway/config/wallet-secret.key"
+  },
+  "account": {
+    "clientId": "REPLACE_WITH_ACCOUNT_SYSTEM_CLIENT_ID",
+    "loginUrl": "https://account.js.gripe/login",
+    "meUrl": "https://gateway.js.gripe/api/v1/myaccount/me",
+    "redirectUri": "https://pay.js.gripe/auth/account/callback",
+    "scopes": ["accounts:read"]
+  },
+  "test": {
+    "allowSimulate": true
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "js-gripe-pay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "/opt/myweb/node_modules/.bin/astro build --root /opt/pay",
+    "preview": "/opt/myweb/node_modules/.bin/astro preview --root /opt/pay"
+  },
+  "dependencies": {
+    "astro": "^6.1.9"
+  }
+}

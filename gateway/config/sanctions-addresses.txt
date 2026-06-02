@@ -1,0 +1,4 @@
+# Local OFAC / sanctions exact-match address list.
+# One address per line is recommended. Blank lines and comments are ignored.
+# Example:
+# TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

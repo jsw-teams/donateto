@@ -1,0 +1,64 @@
+---
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>订单状态 / JS.Gripe Pay</title>
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <header class="shell topbar">
+      <a class="brand" href="/">JS.Gripe Pay</a>
+      <nav class="nav">
+        <a class="button" href="/">创建订单</a>
+      </nav>
+    </header>
+    <main>
+      <h1>订单状态</h1>
+      <p class="lead">这里只能查看当前浏览器会话关联的最近订单，不接受 URL 订单号查询。</p>
+      <section class="panel">
+        <div class="status" data-status>正在读取订单...</div>
+      </section>
+    </main>
+    <script>
+      const statusEl = document.querySelector("[data-status]");
+
+      const copy = {
+        accepted: "支付已通过审核，感谢你的支持。你的心意会用于本站运行和公开项目维护。",
+        rejected: "这笔支付不能被接受，但仍然感谢你愿意支持本站。如需补充说明，可联系 helper@js.gripe。",
+        frozen_review: "这笔资金来源需要进一步调查，暂不能接受或归集；仍然感谢你愿意支持本站。如需说明情况，可联系 helper@js.gripe。",
+        suspicious: "这笔资金来源需要进一步调查，暂不能接受或归集；仍然感谢你愿意支持本站。",
+        default: "订单已记录，感谢你愿意支持本站。付款检测和审核完成后，这里会更新状态。"
+      };
+
+      fetch("/api/v1/donate/session/latest", { credentials: "same-origin" })
+        .then(async (response) => {
+          const payload = await response.json();
+          if (!response.ok || payload.ok !== true) throw new Error(payload.error || "读取失败");
+          const message = payload.status === "accepted"
+            ? copy.accepted
+            : payload.status === "rejected"
+              ? copy.rejected
+              : payload.status === "frozen_review" || payload.riskTag === "suspicious" || payload.riskTag === "illegal"
+                ? copy.frozen_review
+                : copy.default;
+          statusEl.innerHTML = [
+            `<p><strong>${message}</strong></p>`,
+            "<dl>",
+            `<div><dt>订单</dt><dd>${payload.orderId}</dd></div>`,
+            `<div><dt>状态</dt><dd>${payload.status}</dd></div>`,
+            `<div><dt>标签</dt><dd>${payload.riskTag}</dd></div>`,
+            `<div><dt>金额</dt><dd>${payload.amount} ${payload.asset} / ${payload.network}</dd></div>`,
+            `<div><dt>说明</dt><dd>${payload.publicMessage || ""}</dd></div>`,
+            "</dl>"
+          ].join("");
+        })
+        .catch((error) => {
+          statusEl.textContent = `${error.message}。请先从支持页面创建订单。`;
+        });
+    </script>
+  </body>
+</html>

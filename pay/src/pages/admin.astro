@@ -1,0 +1,546 @@
+---
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="zh-CN" data-admin-page>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin / JS.Gripe Pay</title>
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <header class="shell topbar">
+      <a class="brand" href="/">JS.Gripe Pay</a>
+      <nav class="nav">
+        <select data-lang aria-label="Language">
+          <option value="zh-CN">简体中文</option>
+          <option value="zh-TW">繁體中文</option>
+          <option value="en">English</option>
+        </select>
+        <a class="button" href="/" data-i18n="create">创建订单</a>
+        <button data-login type="button" data-i18n="login">管理员登录</button>
+        <button data-logout type="button" data-i18n="logout">退出</button>
+      </nav>
+    </header>
+    <main class="admin-main">
+      <div class="page-title-row">
+        <div>
+          <h1 data-i18n="title">管理后台</h1>
+          <p class="lead" data-i18n="lead">审核支持订单、发起提现请求，归集结果由钱包服务回写。</p>
+        </div>
+        <button data-sync-tron type="button" data-i18n="sync">同步 TRON</button>
+      </div>
+      <section class="panel admin-panel">
+        <div class="status" data-status aria-live="polite">正在检查登录状态...</div>
+        <div class="summary-grid" data-summary></div>
+        <div class="batch-bar">
+          <label class="notice">
+            <input data-select-all type="checkbox" />
+            <span data-i18n="selectPage">选择当前页订单</span>
+          </label>
+          <select data-batch-risk aria-label="Batch risk tag">
+            <option value="unknown" data-i18n="batchUnknown">批量标记未知</option>
+            <option value="legal" data-i18n="batchLegal">批量标记合法</option>
+            <option value="suspicious" data-i18n="batchSuspicious">批量标记可疑</option>
+            <option value="illegal" data-i18n="batchIllegal">批量标记不合法</option>
+          </select>
+          <button data-batch-apply type="button" data-i18n="applyBatch">保存批量标签</button>
+        </div>
+        <div class="orders" data-orders></div>
+      </section>
+    </main>
+    <div class="modal-backdrop" data-withdraw-modal hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="withdraw-title">
+        <h2 id="withdraw-title" data-i18n="withdrawTitle">提现到 Binance</h2>
+        <p class="muted" id="withdraw-help" data-i18n="withdrawHelp">填写小于等于可提现金额的数额和本次 Binance USDT/TRC20 充值地址，后端会自动分配可提现订单。</p>
+        <form class="withdraw-form" data-withdraw-form aria-describedby="withdraw-help">
+          <label>
+            <span data-i18n="withdrawAmount">提现金额</span>
+            <input data-withdraw-amount name="amount" inputmode="decimal" pattern="[0-9]+([.][0-9]{1,2})?" placeholder="0.00" required />
+          </label>
+          <label>
+            <span data-i18n="binanceAddress">Binance USDT/TRC20 充值地址</span>
+            <input data-withdraw-address name="destinationAddress" placeholder="T..." autocomplete="off" required />
+          </label>
+          <div class="modal-actions">
+            <button type="submit" data-i18n="requestWithdraw">发起提现请求</button>
+            <button type="button" data-close-withdraw data-i18n="close">关闭</button>
+          </div>
+        </form>
+      </section>
+    </div>
+    <script>
+      const api = "/api/v1/donate";
+      const loginStart = "/auth/account/start";
+      const statusEl = document.querySelector("[data-status]");
+      const summaryEl = document.querySelector("[data-summary]");
+      const ordersEl = document.querySelector("[data-orders]");
+      const langEl = document.querySelector("[data-lang]");
+      const withdrawModal = document.querySelector("[data-withdraw-modal]");
+      const withdrawForm = document.querySelector("[data-withdraw-form]");
+      const withdrawAmountEl = document.querySelector("[data-withdraw-amount]");
+      const withdrawAddressEl = document.querySelector("[data-withdraw-address]");
+
+      const dictionaries = {
+        "zh-CN": {
+          create: "创建订单",
+          login: "管理员登录",
+          logout: "退出",
+          title: "管理后台",
+          lead: "审核支持订单、发起提现请求，归集结果由钱包服务回写。",
+          sync: "同步 TRON",
+          signedIn: "已登录：",
+          checking: "正在检查登录状态...",
+          redirectLogin: "未登录，正在跳转到账户系统...",
+          total: "总金额",
+          withdrawable: "可提现金额",
+          accepted: "已接受金额",
+          count: "当前订单数",
+          withdrawTitle: "提现到 Binance",
+          withdrawHelp: "填写小于等于可提现金额的数额和本次 Binance USDT/TRC20 充值地址，后端会自动分配可提现订单。",
+          withdrawAmount: "提现金额",
+          binanceAddress: "Binance USDT/TRC20 充值地址",
+          requestWithdraw: "发起提现请求",
+          close: "关闭",
+          selectPage: "选择当前页订单",
+          batchUnknown: "批量标记未知",
+          batchLegal: "批量标记合法",
+          batchSuspicious: "批量标记可疑",
+          batchIllegal: "批量标记不合法",
+          applyBatch: "保存批量标签",
+          noOrders: "暂无订单。",
+          status: "状态",
+          risk: "资金标签",
+          amount: "金额",
+          receiveAddress: "收款地址",
+          sourceAddress: "来源地址",
+          tx: "付款交易",
+          screening: "筛查",
+          consolidation: "归集",
+          supporter: "支持者",
+          email: "邮箱",
+          message: "留言",
+          publicMessage: "对外说明",
+          note: "审核备注",
+          saveRisk: "保存标签/备注",
+          unknown: "未知",
+          legal: "合法",
+          suspicious: "可疑",
+          illegal: "不合法",
+          missing: "未提供",
+          pendingSource: "付款检测后写入",
+          undetected: "未检测",
+          noScreening: "暂无链上检测或 AML 结果",
+          notConsolidated: "未归集",
+          withdrawReady: "可发起提现",
+          withdrawRequested: "已发起提现请求",
+          withdrawBlocked: "需合法并接受后才能提现",
+          tronSynced: "TRON 同步完成：检查 {checked} 个订单，更新 {updated} 个订单。",
+          batchDone: "批量操作完成：{count} 个订单。",
+          batchFailed: "批量操作完成，但 {count} 个失败：{items}",
+          withdrawDone: "提现请求已记录：{amount} USDT，分配到 {count} 个订单。",
+          withdrawFailed: "提现请求完成，但 {count} 个失败：{items}"
+        },
+        "zh-TW": {
+          create: "建立訂單",
+          login: "管理員登入",
+          logout: "退出",
+          title: "管理後台",
+          lead: "審核支持訂單、發起提現請求，歸集結果由錢包服務回寫。",
+          sync: "同步 TRON",
+          signedIn: "已登入：",
+          checking: "正在檢查登入狀態...",
+          redirectLogin: "未登入，正在跳轉到帳戶系統...",
+          total: "總金額",
+          withdrawable: "可提現金額",
+          accepted: "已接受金額",
+          count: "目前訂單數",
+          withdrawTitle: "提現到 Binance",
+          withdrawHelp: "填寫小於等於可提現金額的數額和本次 Binance USDT/TRC20 充值地址，後端會自動分配可提現訂單。",
+          withdrawAmount: "提現金額",
+          binanceAddress: "Binance USDT/TRC20 充值地址",
+          requestWithdraw: "發起提現請求",
+          close: "關閉",
+          selectPage: "選擇目前頁面訂單",
+          batchUnknown: "批量標記未知",
+          batchLegal: "批量標記合法",
+          batchSuspicious: "批量標記可疑",
+          batchIllegal: "批量標記不合法",
+          applyBatch: "保存批量標籤",
+          noOrders: "暫無訂單。",
+          status: "狀態",
+          risk: "資金標籤",
+          amount: "金額",
+          receiveAddress: "收款地址",
+          sourceAddress: "來源地址",
+          tx: "付款交易",
+          screening: "篩查",
+          consolidation: "歸集",
+          supporter: "支持者",
+          email: "Email",
+          message: "留言",
+          publicMessage: "對外說明",
+          note: "審核備註",
+          saveRisk: "保存標籤/備註",
+          unknown: "未知",
+          legal: "合法",
+          suspicious: "可疑",
+          illegal: "不合法",
+          missing: "未提供",
+          pendingSource: "付款檢測後寫入",
+          undetected: "未檢測",
+          noScreening: "暫無鏈上檢測或 AML 結果",
+          notConsolidated: "未歸集",
+          withdrawReady: "可發起提現",
+          withdrawRequested: "已發起提現請求",
+          withdrawBlocked: "需合法並接受後才能提現",
+          tronSynced: "TRON 同步完成：檢查 {checked} 個訂單，更新 {updated} 個訂單。",
+          batchDone: "批量操作完成：{count} 個訂單。",
+          batchFailed: "批量操作完成，但 {count} 個失敗：{items}",
+          withdrawDone: "提現請求已記錄：{amount} USDT，分配到 {count} 個訂單。",
+          withdrawFailed: "提現請求完成，但 {count} 個失敗：{items}"
+        },
+        en: {
+          create: "Create Order",
+          login: "Admin Login",
+          logout: "Sign Out",
+          title: "Admin",
+          lead: "Review support orders, request withdrawals, and let the wallet service write back consolidation results.",
+          sync: "Sync TRON",
+          signedIn: "Signed in: ",
+          checking: "Checking sign-in status...",
+          redirectLogin: "Not signed in. Redirecting to account-system...",
+          total: "Total",
+          withdrawable: "Withdrawable",
+          accepted: "Accepted",
+          count: "Orders",
+          withdrawTitle: "Withdraw To Binance",
+          withdrawHelp: "Enter an amount up to the withdrawable balance and this Binance USDT/TRC20 deposit address. The backend allocates eligible orders automatically.",
+          withdrawAmount: "Withdrawal Amount",
+          binanceAddress: "Binance USDT/TRC20 Deposit Address",
+          requestWithdraw: "Request Withdrawal",
+          close: "Close",
+          selectPage: "Select current page",
+          batchUnknown: "Mark Unknown",
+          batchLegal: "Mark Legal",
+          batchSuspicious: "Mark Suspicious",
+          batchIllegal: "Mark Illegal",
+          applyBatch: "Save Batch Tags",
+          noOrders: "No orders.",
+          status: "Status",
+          risk: "Risk Tag",
+          amount: "Amount",
+          receiveAddress: "Receive Address",
+          sourceAddress: "Source Address",
+          tx: "Payment Tx",
+          screening: "Screening",
+          consolidation: "Consolidation",
+          supporter: "Supporter",
+          email: "Email",
+          message: "Message",
+          publicMessage: "Public Message",
+          note: "Review Note",
+          saveRisk: "Save Tag / Note",
+          unknown: "Unknown",
+          legal: "Legal",
+          suspicious: "Suspicious",
+          illegal: "Illegal",
+          missing: "Not provided",
+          pendingSource: "Recorded after payment detection",
+          undetected: "Not detected",
+          noScreening: "No chain or AML screening yet",
+          notConsolidated: "Not consolidated",
+          withdrawReady: "Ready to withdraw",
+          withdrawRequested: "Withdrawal requested",
+          withdrawBlocked: "Must be accepted and legal first",
+          tronSynced: "TRON sync complete: checked {checked}, updated {updated}.",
+          batchDone: "Batch complete: {count} orders.",
+          batchFailed: "Batch complete, but {count} failed: {items}",
+          withdrawDone: "Withdrawal requested for {amount} USDT across {count} orders.",
+          withdrawFailed: "Withdrawal request finished, but {count} failed: {items}"
+        }
+      };
+
+      let lang = localStorage.getItem("donateAdminLang") || (navigator.language?.startsWith("zh-TW") ? "zh-TW" : navigator.language?.startsWith("zh") ? "zh-CN" : "en");
+      if (!dictionaries[lang]) lang = "zh-CN";
+      langEl.value = lang;
+      let lastSummary = {};
+      applyLanguage();
+
+      function t(key) {
+        return dictionaries[lang][key] || dictionaries["zh-CN"][key] || key;
+      }
+
+      function format(template, data) {
+        return template.replace(/\{(\w+)\}/g, (_, key) => data[key] ?? "");
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        }[char]));
+      }
+
+      function applyLanguage() {
+        document.documentElement.lang = lang;
+        for (const node of document.querySelectorAll("[data-i18n]")) {
+          node.textContent = t(node.dataset.i18n);
+        }
+        statusEl.textContent = t("checking");
+      }
+
+      async function request(path, options = {}) {
+        const response = await fetch(`${api}${path}`, {
+          credentials: "same-origin",
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          }
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          const error = new Error(payload.error || "request failed");
+          error.status = response.status;
+          throw error;
+        }
+        return payload;
+      }
+
+      async function refresh() {
+        try {
+          const me = await request("/admin/me");
+          statusEl.textContent = `${t("signedIn")}${me.admin.email}`;
+          const data = await request("/admin/orders?limit=5");
+          lastSummary = data.summary || {};
+          renderSummary(lastSummary);
+          ordersEl.innerHTML = data.orders.map(renderOrder).join("") || `<p>${t("noOrders")}</p>`;
+        } catch (error) {
+          if (error.status === 401) {
+            statusEl.textContent = t("redirectLogin");
+            location.replace(loginStart);
+            return;
+          }
+          statusEl.textContent = error.message;
+          summaryEl.innerHTML = "";
+          ordersEl.innerHTML = "";
+        }
+      }
+
+      function renderSummary(summary = {}) {
+        const withdrawableAmount = summary.withdrawableAmount || "0.00";
+        const hasWithdrawable = Number(withdrawableAmount) > 0;
+        summaryEl.innerHTML = [
+          `<article class="summary-card primary-summary"><strong>${summary.totalAmount || "0.00"} USDT</strong><span>${t("total")}</span><small>${t("withdrawable")}: ${withdrawableAmount} USDT</small></article>`,
+          `<article class="summary-card"><strong>${summary.count || 0}</strong><span>${t("count")}</span><small>${t("accepted")}: ${summary.acceptedAmount || "0.00"} USDT</small></article>`,
+          `<button class="summary-card summary-action" type="button" data-open-withdraw ${hasWithdrawable ? "" : "disabled"}>${t("requestWithdraw")}</button>`
+        ].join("");
+      }
+
+      function renderOrder(order) {
+        const canWithdraw = Number(order.withdrawableAmount || "0") > 0;
+        const screening = order.screening
+          ? `${order.screening.provider || "unknown"} / ${order.screening.riskTag || "unknown"} / ${order.screening.note || ""}`
+          : "";
+        const consolidation = order.consolidation
+          ? `${order.consolidation.destination || "binance"} / ${order.consolidation.address || ""} / ${order.consolidation.txHash || ""}`
+          : "";
+        const withdrawal = order.withdrawalRequest
+          ? `${t("withdrawRequested")}: ${order.withdrawalRequest.amount || order.amount} USDT`
+          : canWithdraw ? `${order.withdrawableAmount} USDT` : t("withdrawBlocked");
+        return `<article class="order-card" data-order="${escapeHtml(order.orderId)}" data-status="${escapeHtml(order.status)}">
+          <div class="order-head">
+            <label class="notice">
+              <input data-order-select type="checkbox" aria-label="${escapeHtml(order.orderId)}" ${canWithdraw ? "" : ""} />
+              <span>${escapeHtml(order.orderId)}</span>
+            </label>
+            <span class="pill">${escapeHtml(order.status)}</span>
+          </div>
+          <div class="order-sections">
+            <section class="info-section">
+              <h2>${t("amount")}</h2>
+              <dl>
+                <div><dt>${t("amount")}</dt><dd>${escapeHtml(order.amount)} ${escapeHtml(order.asset)} / ${escapeHtml(order.network)}</dd></div>
+                <div><dt>${t("status")}</dt><dd>${escapeHtml(order.status)}</dd></div>
+                <div><dt>${t("risk")}</dt><dd>${escapeHtml(order.riskTag || "unknown")}</dd></div>
+                <div><dt>${t("withdrawable")}</dt><dd>${escapeHtml(withdrawal)}</dd></div>
+              </dl>
+            </section>
+            <section class="info-section">
+              <h2>${t("supporter")}</h2>
+              <dl>
+                <div><dt>${t("supporter")}</dt><dd>${escapeHtml(order.displayName || t("missing"))}</dd></div>
+                <div><dt>${t("email")}</dt><dd>${escapeHtml(order.email || t("missing"))}</dd></div>
+                <div><dt>${t("message")}</dt><dd>${escapeHtml(order.message || t("missing"))}</dd></div>
+              </dl>
+            </section>
+            <section class="info-section wide">
+              <h2>${t("receiveAddress")}</h2>
+              <dl>
+                <div><dt>${t("receiveAddress")}</dt><dd><code>${escapeHtml(order.payTo)}</code></dd></div>
+                <div><dt>${t("sourceAddress")}</dt><dd><code>${escapeHtml(order.senderAddress || t("pendingSource"))}</code></dd></div>
+                <div><dt>${t("tx")}</dt><dd><code>${escapeHtml(order.txHash || t("undetected"))}</code></dd></div>
+                <div><dt>${t("screening")}</dt><dd>${escapeHtml(screening || t("noScreening"))}</dd></div>
+                <div><dt>${t("consolidation")}</dt><dd>${escapeHtml(consolidation || t("notConsolidated"))}</dd></div>
+              </dl>
+            </section>
+          </div>
+          <div class="risk-row">
+            <label>
+              <span>${t("risk")}</span>
+              <select data-risk-tag>
+                <option value="unknown" ${(order.riskTag || "unknown") === "unknown" ? "selected" : ""}>${t("unknown")}</option>
+                <option value="legal" ${order.riskTag === "legal" ? "selected" : ""}>${t("legal")}</option>
+                <option value="suspicious" ${order.riskTag === "suspicious" ? "selected" : ""}>${t("suspicious")}</option>
+                <option value="illegal" ${order.riskTag === "illegal" ? "selected" : ""}>${t("illegal")}</option>
+              </select>
+            </label>
+            <label>
+              <span>${t("note")}</span>
+              <textarea data-note rows="2">${escapeHtml(order.reviewerNote || "")}</textarea>
+            </label>
+            <button data-save-risk type="button">${t("saveRisk")}</button>
+          </div>
+          <p class="muted">${escapeHtml(order.publicMessage || "")}</p>
+        </article>`;
+      }
+
+      langEl.addEventListener("change", async () => {
+        lang = langEl.value;
+        localStorage.setItem("donateAdminLang", lang);
+        applyLanguage();
+        await refresh();
+      });
+
+      document.querySelector("[data-login]").addEventListener("click", () => {
+        location.href = loginStart;
+      });
+
+      document.querySelector("[data-logout]").addEventListener("click", async () => {
+        await request("/admin/logout", { method: "POST", body: "{}" });
+        await refresh();
+      });
+
+      document.querySelector("[data-sync-tron]").addEventListener("click", async () => {
+        const result = await request("/admin/tron/sync", { method: "POST", body: "{}" });
+        statusEl.textContent = format(t("tronSynced"), result);
+        await refresh();
+      });
+
+      summaryEl.addEventListener("click", (event) => {
+        if (event.target.closest("[data-open-withdraw]")) {
+          const withdrawableAmount = lastSummary.withdrawableAmount || "0.00";
+          withdrawAmountEl.max = withdrawableAmount;
+          withdrawAmountEl.placeholder = `${t("withdrawable")}: ${withdrawableAmount} USDT`;
+          if (!withdrawAmountEl.value) withdrawAmountEl.value = withdrawableAmount;
+          withdrawModal.hidden = false;
+          withdrawAmountEl.focus();
+        }
+      });
+
+      document.querySelector("[data-close-withdraw]").addEventListener("click", () => {
+        withdrawModal.hidden = true;
+      });
+
+      document.querySelector("[data-select-all]").addEventListener("change", (event) => {
+        for (const checkbox of ordersEl.querySelectorAll("[data-order-select]")) {
+          checkbox.checked = event.target.checked;
+        }
+      });
+
+      document.querySelector("[data-batch-apply]").addEventListener("click", async () => {
+        const orderIds = selectedOrderIds();
+        const riskTag = document.querySelector("[data-batch-risk]").value;
+        const result = await request("/admin/orders/batch", {
+          method: "POST",
+          body: JSON.stringify({
+            orderIds,
+            status: statusForRisk(riskTag),
+            riskTag,
+            note: `batch:${riskTag}`
+          })
+        });
+        reportResults(result.results, "batchDone", "batchFailed");
+        await refresh();
+      });
+
+      withdrawForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const maxAmount = Number(lastSummary.withdrawableAmount || "0");
+        const requestedAmount = Number(withdrawAmountEl.value || "0");
+        if (!Number.isFinite(requestedAmount) || requestedAmount <= 0 || requestedAmount > maxAmount) {
+          statusEl.textContent = `${t("withdrawable")}: ${lastSummary.withdrawableAmount || "0.00"} USDT`;
+          return;
+        }
+        try {
+          const result = await request("/admin/withdrawals/request", {
+            method: "POST",
+            body: JSON.stringify({
+              amount: withdrawAmountEl.value,
+              destinationAddress: withdrawAddressEl.value
+            })
+          });
+          const failed = result.results.filter((item) => !item.ok);
+          if (failed.length) {
+            reportResults(result.results, "withdrawDone", "withdrawFailed");
+          } else {
+            statusEl.textContent = format(t("withdrawDone"), {
+              amount: result.requestedAmount || withdrawAmountEl.value,
+              count: result.results.length
+            });
+          }
+          withdrawModal.hidden = true;
+          await refresh();
+        } catch (error) {
+          statusEl.textContent = error.message;
+        }
+      });
+
+      ordersEl.addEventListener("click", async (event) => {
+        const saveRisk = event.target.closest("button[data-save-risk]");
+        if (!saveRisk) return;
+        const card = saveRisk.closest("[data-order]");
+        const orderId = card.dataset.order;
+        const riskTag = card.querySelector("[data-risk-tag]").value;
+        const note = card.querySelector("[data-note]").value;
+        await request(`/admin/orders/${orderId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: statusForRisk(riskTag), riskTag, note })
+        });
+        await refresh();
+      });
+
+      function selectedOrderIds() {
+        return Array.from(ordersEl.querySelectorAll("[data-order-select]:checked"))
+          .map((input) => input.closest("[data-order]").dataset.order);
+      }
+
+      function reportResults(results, okKey, failKey) {
+        const failed = results.filter((item) => !item.ok);
+        statusEl.textContent = failed.length
+          ? format(t(failKey), { count: failed.length, items: failed.map((item) => `${item.orderId} ${item.error}`).join("; ") })
+          : format(t(okKey), { count: results.length });
+      }
+
+      function statusForRisk(riskTag) {
+        if (riskTag === "legal") return "accepted";
+        if (riskTag === "suspicious") return "frozen_review";
+        if (riskTag === "illegal") return "rejected";
+        return "pending_review";
+      }
+
+      window.addEventListener("message", (event) => {
+        if (event.origin === location.origin && event.data?.type === "donate-auth") {
+          refresh();
+        }
+      });
+
+      refresh();
+    </script>
+  </body>
+</html>

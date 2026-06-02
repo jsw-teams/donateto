@@ -1,0 +1,114 @@
+---
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>支持技诉 / JS.Gripe Pay</title>
+    <meta name="description" content="用 USDT / TRC20 小额支持 JS.Gripe / 技诉的运行与维护。" />
+  </head>
+  <body>
+    <header class="shell topbar">
+      <a class="brand" href="/">JS.Gripe Pay</a>
+      <nav class="nav">
+        <a class="button" href="https://js.gripe/contact/">联系方式</a>
+        <a class="button" href="/admin/">订单管理</a>
+      </nav>
+    </header>
+    <main>
+      <h1>支持技诉继续运行</h1>
+      <p class="lead">小额支持会用于服务器、域名、工具订阅和公开项目维护。无论付款最终是否能被接受，都感谢你愿意支持本站。</p>
+      <section class="panel" aria-labelledby="pay-title">
+        <h2 id="pay-title">创建支持订单</h2>
+        <p class="muted">当前仅支持 USDT / TRC20。每个订单短时有效，后续会接入每单独立收款地址。</p>
+        <form data-pay-form>
+          <label>
+            <span>金额，1-20 USDT</span>
+            <input name="amount" inputmode="decimal" pattern="[0-9]+([.][0-9]{1,2})?" value="5.00" placeholder="例如 6.66" required />
+          </label>
+          <label>
+            <span>显示名称</span>
+            <input name="displayName" maxlength="80" autocomplete="name" />
+          </label>
+          <label>
+            <span>邮箱，可选</span>
+            <input name="email" type="email" maxlength="120" autocomplete="email" />
+          </label>
+          <label>
+            <span>留言，可选</span>
+            <textarea name="message" maxlength="500" rows="3"></textarea>
+          </label>
+          <label class="notice">
+            <input name="sourceNoticeAccepted" type="checkbox" required />
+            <span>我确认资金来自合法来源，不来自混币、受制裁地址、被盗资金或未经授权的第三方资金。</span>
+          </label>
+          <button class="primary" type="submit">创建订单</button>
+        </form>
+      </section>
+    </main>
+    <div class="modal-backdrop" data-modal hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <h2 id="modal-title">感谢你愿意支持本站</h2>
+        <div data-modal-body></div>
+        <div class="modal-actions">
+          <a class="button primary" href="/status/">付款完成后查看状态</a>
+          <button type="button" data-close-modal>关闭</button>
+        </div>
+      </section>
+    </div>
+    <script>
+      const endpoint = "/api/v1/donate";
+      const form = document.querySelector("[data-pay-form]");
+      const modal = document.querySelector("[data-modal]");
+      const modalBody = document.querySelector("[data-modal-body]");
+      const closeModal = document.querySelector("[data-close-modal]");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const data = new FormData(form);
+        const amount = data.get("amount");
+        const response = await fetch(endpoint, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount,
+            asset: "USDT",
+            network: "TRC20",
+            displayName: data.get("displayName"),
+            email: data.get("email"),
+            message: data.get("message"),
+            sourceNoticeAccepted: data.get("sourceNoticeAccepted") === "on"
+          })
+        });
+        const payload = await response.json();
+        if (!response.ok || payload.ok !== true) {
+          showModal(`<p><strong>支付订单创建失败，但仍然感谢你愿意支持本站。</strong></p><p>${payload.error || "请稍后再试，或联系 helper@js.gripe。"}</p>`);
+          return;
+        }
+        showModal([
+          "<p><strong>订单已创建，感谢你愿意支持本站。</strong></p>",
+          "<p>请按以下 USDT / TRC20 信息付款；付款完成后可从本弹窗进入状态页查看审核结果。状态查询只读取本浏览器会话，不接受 URL 订单号查询。</p>",
+          "<dl>",
+          `<div><dt>订单</dt><dd>${payload.orderId}</dd></div>`,
+          `<div><dt>资产</dt><dd>${payload.asset} / ${payload.network}</dd></div>`,
+          `<div><dt>金额</dt><dd>${payload.amount}</dd></div>`,
+          `<div><dt>地址</dt><dd><code>${payload.payTo}</code></dd></div>`,
+          `<div><dt>有效期</dt><dd>${payload.expiresAt}</dd></div>`,
+          "</dl>"
+        ].join(""));
+      });
+
+      closeModal.addEventListener("click", () => {
+        modal.hidden = true;
+      });
+
+      function showModal(html) {
+        modalBody.innerHTML = html;
+        modal.hidden = false;
+      }
+    </script>
+  </body>
+</html>
