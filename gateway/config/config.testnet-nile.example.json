@@ -27,7 +27,7 @@
       "enabled": true,
       "receiveAddress": "",
       "addressPool": [],
-      "tokenContract": "",
+      "tokenContract": "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf",
       "tokenSymbol": "USDT",
       "confirmations": 1
     }

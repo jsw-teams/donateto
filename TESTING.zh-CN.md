@@ -54,9 +54,16 @@ node /opt/donate-gateway/test/testnet-order-smoke.mjs
 
 - `orderId`
 - 测试网 `payTo` 收款地址
-- 订单金额，默认 `5.00`
+- 订单金额，默认 `1000.00`
 
 然后在 TronLink 切换到 Nile 或 Shasta 测试网，把 faucet 获取的测试 USDT 发送到 `payTo`。
+
+金额填写规则：
+
+- 如果 faucet 页面显示固定发 `Get 1000 USDT test tokens`，测试订单金额必须填 `1000.00`。
+- 如果使用 smoke 脚本，默认已经是 `1000.00`，不需要额外设置。
+- 如果某个 faucet 或 Bot 固定发 `5000 USDT`，则需要用 `TESTNET_AMOUNT=5000.00 node /opt/donate-gateway/test/testnet-order-smoke.mjs` 创建订单。
+- 如果你故意用 `5.00` 订单去接收 `1000 USDT`，系统会进入 `frozen_review`，这是金额不符测试，不是正常付款测试。
 
 测试网 faucet：
 
@@ -67,7 +74,8 @@ node /opt/donate-gateway/test/testnet-order-smoke.mjs
 配置注意：
 
 - 主网配置继续使用 USDT/TRC20 合约地址 `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t` 精确匹配。
-- 测试网样例不写主网合约地址，而使用 `tokenSymbol: "USDT"` 匹配 faucet 发出的测试网 TRC20 USDT。
+- Nile 样例已按截图中的测试网 USDT 合约 `TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf` 精确匹配。
+- Shasta 样例暂时使用 `tokenSymbol: "USDT"` 匹配 faucet 发出的测试网 TRC20 USDT；拿到 Shasta 页面显示的 token address 后，也应改成精确 `tokenContract`。
 - 不要把测试网配置部署到公网 `pay.js.gripe` 或 `gateway.js.gripe`，也不要把测试网订单标记为真实支持。
 
 ### 2. Binance 资金来源：一次 10U 真实收款验收
