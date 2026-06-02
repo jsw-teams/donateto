@@ -18,7 +18,7 @@ frontend, and the operating documents used to keep USDT/TRC20 support reviewable
 | Asset | USDT / TRC20 first |
 | Screening | Local OFAC/sanctions exact-match baseline, optional manual Scorechain AI review |
 | Withdrawal | Gateway records withdrawal requests; external wallet service executes transfers |
-| Tests | Smoke/build checks only; full automated coverage is still missing |
+| Tests | Nile testnet chain-payment smoke passed; full automated coverage is still missing |
 | License | Not selected yet; source-available for audit until a license is added |
 
 ## Target Flow
@@ -121,7 +121,19 @@ audit, not formally open-source.
 
 ## Testing Status
 
-The implementation does not yet have full automated test coverage. Local checks have included `node --check`, Astro `npm run build`, and smoke/manual UI checks. Production use still needs tests for TRON detection, wrong-amount handling, local sanctions matching, admin auth, withdrawal allocation, consolidation callback verification and mobile/accessibility behavior.
+The implementation does not yet have full automated test coverage. Local checks have included `node --check`, Astro `npm run build`, smoke/manual UI checks, and one Nile testnet TRC20 payment smoke. Production use still needs tests for TRON detection, wrong-amount handling, local sanctions matching, admin auth, withdrawal allocation, consolidation callback verification and mobile/accessibility behavior.
+
+### Verified Nile Testnet Result
+
+On 2026-06-02, the gateway completed one end-to-end Nile testnet smoke:
+
+- Gateway order: `dt_20260602_b9afc19479`.
+- Amount: `1000.00` test USDT.
+- Payment address: `TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU`.
+- Nile TRC20 transaction: `a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba`.
+- Sender address: `TVF2Mp9QY7FEGTnr3DBpFLobA6jguHyMvi`.
+- Gateway result: `pending_review`, `amountMatched: true`, amount difference `0.000000`, no local sanctions exact-match hit.
+- The temporary `donate-gateway-nile.service` test instance has been closed, and `127.0.0.1:9011` is no longer listening.
 
 ## Files
 

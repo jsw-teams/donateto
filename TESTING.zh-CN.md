@@ -78,6 +78,17 @@ node /opt/donate-gateway/test/testnet-order-smoke.mjs
 - Shasta 样例暂时使用 `tokenSymbol: "USDT"` 匹配 faucet 发出的测试网 TRC20 USDT；拿到 Shasta 页面显示的 token address 后，也应改成精确 `tokenContract`。
 - 不要把测试网配置部署到公网 `pay.js.gripe` 或 `gateway.js.gripe`，也不要把测试网订单标记为真实支持。
 
+已完成的 Nile 验证：
+
+- 日期：2026-06-02。
+- 网关订单：`dt_20260602_b9afc19479`。
+- 订单金额：`1000.00` USDT 测试币。
+- 订单收款地址：`TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU`。
+- Nile TRC20 交易哈希：`a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba`。
+- 链上付款来源地址：`TVF2Mp9QY7FEGTnr3DBpFLobA6jguHyMvi`。
+- 网关检测结果：订单进入 `pending_review`，`amountMatched: true`，金额差额 `0.000000`，本地制裁地址精确匹配未命中。
+- 测试实例 `donate-gateway-nile.service` 已关闭，`127.0.0.1:9011` 不再监听。
+
 ### 2. Binance 资金来源：一次 10U 真实收款验收
 
 用途：

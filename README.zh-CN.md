@@ -16,7 +16,7 @@
 | 首选资产 | USDT / TRC20 |
 | 筛查 | 本地 OFAC/制裁地址精确匹配，必要时人工使用 Scorechain AI 复核 |
 | 提现/归集 | 网关只记录提现请求，独立钱包服务执行转账并回调 |
-| 测试 | 目前只有构建/语法/smoke 检查，完整自动化测试仍缺失 |
+| 测试 | 已完成 Nile 测试网真实链上入账 smoke；完整自动化测试仍缺失 |
 | 许可证 | 尚未选择；加许可证前属于 source-available 公开审计，不是严格开源 |
 
 ## 目标流程
@@ -201,6 +201,19 @@ Node 服务比直接部署 SHKeeper 或 Bitcart 更合适。
 - 后端 `node --check` 语法检查。
 - 前端 Astro `npm run build` 构建检查。
 - 少量手动/烟雾交互测试。
+- Nile 测试网真实 TRC20 测试币入账 smoke。
+
+### 已验证的 Nile 测试网结果
+
+2026-06-02，已通过 Nile 测试网完成一次端到端 smoke：
+
+- 网关创建订单：`dt_20260602_b9afc19479`。
+- 订单金额：`1000.00` USDT 测试币。
+- 订单收款地址：`TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU`。
+- Nile TRC20 交易哈希：`a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba`。
+- 链上付款来源地址：`TVF2Mp9QY7FEGTnr3DBpFLobA6jguHyMvi`。
+- 网关检测结果：`pending_review`，`amountMatched: true`，金额差额 `0.000000`，本地制裁地址精确匹配未命中。
+- 测试实例 `donate-gateway-nile.service` 已关闭，`127.0.0.1:9011` 不再监听。
 
 上线前仍需要补充：订单创建/过期观察期、TRON 金额匹配和金额不符、local OFAC 精确匹配、管理员权限、提现金额分配、webhook 归集核验、移动端 UI、无障碍访问的自动化测试。
 
