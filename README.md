@@ -127,6 +127,7 @@ The implementation does not yet have full automated test coverage. Local checks 
 
 - `README.zh-CN.md`: Chinese version of this overview.
 - `SECURITY.md`: publication and operational security notes.
+- `TESTING.zh-CN.md`: Binance-funded real testing strategy.
 - `IMPLEMENTATION_PLAN.md`: phased implementation plan.
 - `API.md`: proposed API surface.
 - `RISK_CONTROLS.md`: AML/sanctions/risk workflow.

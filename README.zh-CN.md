@@ -204,6 +204,7 @@ Node 服务比直接部署 SHKeeper 或 Bitcart 更合适。
 
 上线前仍需要补充：订单创建/过期观察期、TRON 金额匹配和金额不符、local OFAC 精确匹配、管理员权限、提现金额分配、webhook 归集核验、移动端 UI、无障碍访问的自动化测试。
 
+- `TESTING.zh-CN.md`：Binance 资金来源下的真实测试策略，尽量减少 10U 提现测试次数。
 - `WALLET_ADDRESS_PLAN.zh-CN.md`：USDT / TRC20 每单独立地址与资金安全方案。
 - `IMPLEMENTATION_PLAN.md`：分阶段实施计划。
 - `API.md`：API 设计草案。
