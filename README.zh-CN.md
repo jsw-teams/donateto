@@ -1,6 +1,6 @@
 # Donateto
 
-支持网关 / Donation gateway with account login and USDT/TRC20 review for public support
+支付网关 / Payment gateway with account login and USDT/TRC20 review for public support
 
 语言： [English](README.md) | **简体中文**
 
