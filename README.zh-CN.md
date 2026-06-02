@@ -1,8 +1,23 @@
 # Donateto
 
-`donateto` 保存 JS.Gripe / 技诉的无 Docker 加密货币支持网关方案。
+语言： [English](README.md) | **简体中文**
 
-目标流程：
+`donateto` 是 JS.Gripe / 技诉加密货币支持网关的公开审计快照，包含轻量后端网关、`pay.js.gripe` 专用 Astro 前端，以及资金审核、地址管理和合规处理文档。
+
+## 项目状态
+
+| 项目 | 状态 |
+| --- | --- |
+| 仓库 | `jsw-teams/donateto` 公开审计快照 |
+| 运行方式 | 无 Docker，Node 网关由 OpenResty 反代 |
+| 前端 | Astro 支付页、状态页、管理员后台 |
+| 首选资产 | USDT / TRC20 |
+| 筛查 | 本地 OFAC/制裁地址精确匹配，必要时人工使用 Scorechain AI 复核 |
+| 提现/归集 | 网关只记录提现请求，独立钱包服务执行转账并回调 |
+| 测试 | 目前只有构建/语法/smoke 检查，完整自动化测试仍缺失 |
+| 许可证 | 尚未选择；加许可证前属于 source-available 公开审计，不是严格开源 |
+
+## 目标流程
 
 ```text
 myweb / myblog
@@ -12,7 +27,25 @@ myweb / myblog
   -> 链上轮询 / 未来可选支付服务 webhook
   -> 制裁与风险筛查
   -> 审核通过后表达感谢
-  -> 手动或半自动归集到 Binance
+  -> 发起提现请求给独立钱包服务
+  -> 钱包服务执行归集并回调核验
+```
+
+## 目录结构
+
+```text
+.
+├── gateway/                  # Node 后端网关源码
+│   ├── src/                  # HTTP API、TRON 轮询、审核和提现请求逻辑
+│   ├── config/               # 配置样例和本地 sanctions 名单模板
+│   └── test/                 # smoke 脚本，不是完整测试套件
+├── pay/                      # Astro 支付页、状态页、管理员后台
+├── README.md                 # 英文说明
+├── SECURITY.md               # 公开发布和运行安全说明
+├── API.md                    # API 设计和当前接口
+├── WALLET_ADDRESS_PLAN.zh-CN.md
+├── COMPLIANCE_PLAYBOOK.md
+└── RISK_CONTROLS.md
 ```
 
 ## 当前决定
@@ -52,7 +85,7 @@ Node 服务比直接部署 SHKeeper 或 Bitcart 更合适。
 
 不应公开的文件：真实 `config.json`、订单账本、钱包私钥/密钥文件、日志、`node_modules`、前端构建产物、真实 API secret。
 
-当前 GitHub 目标建议为 `jsw-teams/donateto`。由于本机 `gh` 登录已过期，且当前 GitHub 连接器没有创建新仓库工具，发布需要先在 `https://github.com/jsw-teams` 下创建空的公开仓库 `donateto`，或重新执行 `gh auth login -h github.com` 后再由 Codex 推送。
+当前 GitHub 目标为 `https://github.com/jsw-teams/donateto.git`。仓库公开后，外部审计者可以查看 `gateway/`、`pay/` 和文档，但真实运行配置、订单账本、钱包密钥和日志不得提交。
 
 ## 推荐第一条收款网络
 

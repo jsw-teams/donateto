@@ -1,8 +1,25 @@
 # Donateto
 
-`donateto` stores the no-Docker donation gateway plan for JS.Gripe / 技诉.
+Languages: **English** | [简体中文](README.zh-CN.md)
 
-The target is a personal-developer friendly flow:
+`donateto` is the public audit snapshot for the JS.Gripe / 技诉 donation gateway.
+It contains the lightweight backend gateway, the dedicated Astro payment/admin
+frontend, and the operating documents used to keep USDT/TRC20 support reviewable.
+
+## Project Status
+
+| Area | Status |
+| --- | --- |
+| Repository | Public audit snapshot for `jsw-teams/donateto` |
+| Runtime | No-Docker Node gateway behind OpenResty |
+| Frontend | Astro pages for `pay.js.gripe` |
+| Asset | USDT / TRC20 first |
+| Screening | Local OFAC/sanctions exact-match baseline, optional manual Scorechain AI review |
+| Withdrawal | Gateway records withdrawal requests; external wallet service executes transfers |
+| Tests | Smoke/build checks only; full automated coverage is still missing |
+| License | Not selected yet; source-available for audit until a license is added |
+
+## Target Flow
 
 ```text
 myweb / myblog
@@ -16,13 +33,43 @@ myweb / myblog
   -> verified consolidation callback
 ```
 
-## Current Decision
+## Directory Layout
+
+```text
+.
+├── gateway/                  # Node donation gateway source
+│   ├── src/                  # HTTP API, TRON polling, review and withdrawal logic
+│   ├── config/               # Example config and local sanctions-list template
+│   └── test/                 # Smoke scripts; not a complete test suite
+├── pay/                      # Astro frontend for payment, status and admin pages
+├── README.zh-CN.md           # Chinese overview
+├── SECURITY.md               # Publication and operational security notes
+├── API.md                    # API surface
+├── WALLET_ADDRESS_PLAN.zh-CN.md
+├── COMPLIANCE_PLAYBOOK.md
+└── RISK_CONTROLS.md
+```
+
+## Current Decisions
 
 - Do not use Docker for the first implementation.
 - Do not require Binance Merchant or Binance Pay merchant API.
 - Do not publish a permanent Binance deposit address as the primary support path.
 - Use short-lived donation orders, explicit status tracking, and review before thanks.
 - The payment gateway records withdrawal requests; signing and transfer execution belong to a separate wallet service.
+
+## Open-Source Project Evaluation
+
+Existing projects can solve part of the payment-processing problem:
+
+- [Bitcart](https://github.com/bitcart/bitcart): MIT, self-hosted payment processor supporting TRX/USDT and many other assets.
+- [SHKeeper](https://github.com/vsys-host/shkeeper.io): self-hosted cryptocurrency payment processor with Tron/TRC20 support and plugin/API surfaces.
+- [CryptoLink](https://cryptolink.cc/docs/): MIT, self-hosted non-custodial gateway with TRON/USDT, HMAC webhooks and collector-style address handling.
+
+This repository does not replace those projects. It keeps a small auditable
+middle layer for JS.Gripe-specific concerns: account-system admin authorization,
+local sanctions exact-match records, wrong-amount retention, withdrawal requests
+to a personal Binance destination, and existing OpenResty/Astro integration.
 
 ## Why This Shape
 
@@ -58,7 +105,7 @@ generation, confirmation, and risk-review work.
 
 ## Public Audit Snapshot
 
-This directory is prepared as a public audit snapshot:
+This repository is prepared as a public audit snapshot:
 
 - `gateway/`: Node gateway source, example config, local sanctions-list template and smoke scripts.
 - `pay/`: Astro frontend source for the dedicated payment/admin/status pages.
@@ -66,7 +113,9 @@ This directory is prepared as a public audit snapshot:
 
 Do not publish runtime data, real `config.json`, wallet key files, ledgers, logs, `node_modules` or built frontend assets.
 
-The recommended GitHub target is `jsw-teams/donateto`. A public software license has not been selected yet; until a license is added, the repository is source-available for audit, not formally open-source.
+The GitHub target is `jsw-teams/donateto`. A public software license has not been
+selected yet; until a license is added, the repository is source-available for
+audit, not formally open-source.
 
 ## Testing Status
 
