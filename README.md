@@ -129,8 +129,8 @@ On 2026-06-02, the gateway completed one end-to-end Nile testnet smoke:
 
 - Gateway order: `dt_20260602_b9afc19479`.
 - Amount: `1000.00` test USDT.
-- Payment address: `TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU`.
-- Nile TRC20 transaction: `a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba`.
+- Payment address: `TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU`, queryable on the [Nile Tronscan address page](https://nile.tronscan.org/#/address/TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU).
+- Nile TRC20 transaction: `a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba`, queryable on the [Nile Tronscan transaction page](https://nile.tronscan.org/#/transaction/a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba).
 - Sender address: `TVF2Mp9QY7FEGTnr3DBpFLobA6jguHyMvi`.
 - Gateway result: `pending_review`, `amountMatched: true`, amount difference `0.000000`, no local sanctions exact-match hit.
 - The temporary `donate-gateway-nile.service` test instance has been closed, and `127.0.0.1:9011` is no longer listening.

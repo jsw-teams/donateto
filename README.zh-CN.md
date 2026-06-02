@@ -209,8 +209,8 @@ Node 服务比直接部署 SHKeeper 或 Bitcart 更合适。
 
 - 网关创建订单：`dt_20260602_b9afc19479`。
 - 订单金额：`1000.00` USDT 测试币。
-- 订单收款地址：`TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU`。
-- Nile TRC20 交易哈希：`a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba`。
+- 订单收款地址：`TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU`，可在 [Nile Tronscan 地址页](https://nile.tronscan.org/#/address/TX8EoNhEYzoPn2WF2jjPDngfDnLNV7fcDU) 查询。
+- Nile TRC20 交易哈希：`a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba`，可在 [Nile Tronscan 交易页](https://nile.tronscan.org/#/transaction/a660f3f8f6b0737af509f06563e068534412e12561788282fa16b5b0fbaabfba) 查询。
 - 链上付款来源地址：`TVF2Mp9QY7FEGTnr3DBpFLobA6jguHyMvi`。
 - 网关检测结果：`pending_review`，`amountMatched: true`，金额差额 `0.000000`，本地制裁地址精确匹配未命中。
 - 测试实例 `donate-gateway-nile.service` 已关闭，`127.0.0.1:9011` 不再监听。
