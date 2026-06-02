@@ -1,5 +1,7 @@
 # Donateto
 
+支持网关 / Donation gateway with account login and USDT/TRC20 review for public support
+
 Languages: **English** | [简体中文](README.zh-CN.md)
 
 `donateto` is the public audit snapshot for the JS.Gripe / 技诉 donation gateway.

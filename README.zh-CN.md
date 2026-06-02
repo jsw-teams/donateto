@@ -1,5 +1,7 @@
 # Donateto
 
+支持网关 / Donation gateway with account login and USDT/TRC20 review for public support
+
 语言： [English](README.md) | **简体中文**
 
 `donateto` 是 JS.Gripe / 技诉加密货币支持网关的公开审计快照，包含轻量后端网关、`pay.js.gripe` 专用 Astro 前端，以及资金审核、地址管理和合规处理文档。
